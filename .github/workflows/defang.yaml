@@ -1,5 +1,4 @@
 name: Defang
-
 on:
   push:
     branches:
@@ -7,45 +6,42 @@ on:
   workflow_dispatch:
     inputs:
       action:
-        description: "Whether to deploy up or down"
+        description: Whether to deploy up or down
         required: true
-        default: "up"
+        default: up
         type: choice
         options:
           - up
           - down
       stack:
-        description: "The stack to deploy up or down. (Leave blank for default)"
-        default: ""
-
+        description: The stack to deploy up or down. (Leave blank for default)
+        default: p2
 jobs:
   defang:
-    name: Defang ${{ github.event.inputs.action || 'up' }} ${{
-      github.event.inputs.stack || 'default stack' }}
-    environment: defang-production
+    name: Defang ${{ github.event.inputs.action || 'up' }} ${{ github.event.inputs.stack || 'p2' }}
     runs-on: ubuntu-latest
     timeout-minutes: 70
     permissions:
       contents: read
       id-token: write
-
     concurrency:
       cancel-in-progress: false
-      group: deploy-${{ github.event.inputs.stack || 'default' }}
-
+      group: deploy-golang-rest-api-${{ github.event.inputs.stack || 'p2' }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
-
-      - name: Defang ${{ github.event.inputs.action || 'up' }} ${{
-          github.event.inputs.stack || 'default stack' }}
+      - name: Defang ${{ github.event.inputs.action || 'up' }} ${{ github.event.inputs.stack || 'p2' }}
         uses: DefangLabs/defang-github-action@v2
+        env:
+          DEFANG_FABRIC: fabric-dev.gnafed.click
         with:
           command: ${{ github.event.inputs.action || 'up' }}
-          stack: ${{ github.event.inputs.stack || '' }}
-
+          project: golang-rest-api
+          stack: ${{ github.event.inputs.stack || 'p2' }}
       - name: Deployment Summary
         uses: DefangLabs/defang-github-action@v2
         with:
           command: services
-          stack: ${{ github.event.inputs.stack || '' }}
+          project: golang-rest-api
+          stack: ${{ github.event.inputs.stack || 'p2' }}
+    environment: defang-p2
